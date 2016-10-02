@@ -52,7 +52,7 @@ fs.readFile(__dirname + '/getevents.xml', function(err, data) {
       var description = event.Description;
       var date = moment.utc(event.Date).format('MMMM D, YYYY');
       var startTime = moment.utc(event.DateStart).format('HH:mm');
-      var endTime = moment.utc(event.DateEnd).format('HH:mm'); //make if statement for 00:00 (no endTime)
+      var endTime = typeof event.DateEnd == 'string' ? moment.utc(event.DateEnd).format('HH:mm') : '';
       var timeValue = parseInt(moment(`${date}, ${startTime}`, 'MMMM D, YYYY, HH:mm', true).format('x'));
       var url = (function() {
         if(typeof event.Links.jsLink !== 'undefined') {
