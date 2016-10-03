@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "moment": "^2.15.1",
+    "mongoose": "^4.6.2",
     "xml2js": "^0.4.17"
   }
 }
