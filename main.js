@@ -102,7 +102,7 @@ fs.readFile(__dirname + '/getevents2.xml', function(err, data) {
       var secCategory;
       var secSubCategory;
       function parseCats(catArr) {
-        //loop over all event category numbers
+        //loop over all event category numbers and try to match with categories
         catArr.forEach(function(eventCatNum) {
           //loop over parent categories in list
           for(var cat in categories) {
@@ -178,14 +178,14 @@ fs.readFile(__dirname + '/getevents2.xml', function(err, data) {
       var cwId = event.Id;
 
 
-      // if(typeof event.Address == 'string') {
-      //     getCoords(address, city, state, function(lat, lng) {
-      //       postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, cwId, lat, lng);
-      //     });
-      // } else {
-      //     var lat = typeof event.Address !== 'string' ? event.latitude : '';
-      //     var lng = typeof event.Address !== 'string' ? event.longitude : '';
-      //     postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, cwId, lat, lng);
+      if(typeof event.Address == 'string') {
+          getCoords(address, city, state, function(lat, lng) {
+            postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, cwId, lat, lng);
+          });
+      } else {
+          var lat = typeof event.Address !== 'string' ? event.latitude : '';
+          var lng = typeof event.Address !== 'string' ? event.longitude : '';
+          postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, cwId, lat, lng);
       // }
 
     })
