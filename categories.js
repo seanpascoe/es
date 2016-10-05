@@ -1,5 +1,5 @@
 var categories = {
-  music: {85: "classical", 86: "country", 87: "jazz", 89: "electronic", 92: "hip hip", 93: "latin", 94: "folk", 95: "r&b & soul", 96: "rock", 97: "religious", 99: "opera", 100: "concert", 101: "a capella", 102: "acoustic", 104: "choral", 108: "marching band", 204: "alt rock", 20: "heavy metal", 207: "punk", 270: "reggae", 239: "rockabilly", 213: "blues", 212: "bluegrass", 226: "funk", 107: "karaoke", 10262: "live music", 78: "dance club"},
+  music: {85: "classical", 86: "country", 87: "jazz", 89: "electronic", 92: "hip hip", 93: "latin", 94: "folk", 95: "r&b & soul", 96: "rock", 97: "religious", 99: "opera", 100: "concert", 101: "a capella", 102: "acoustic", 104: "choral", 108: "marching band", 204: "alt rock", 20: "heavy metal", 207: "punk", 270: "reggae", 239: "rockabilly", 213: "blues", 212: "bluegrass", 226: "funk", 107: "karaoke", 10262: "live music", 78: "dance club", 17:"other music"},
 
   'performing arts': {18: "dance", 19: "theatre", 20: "comedy", 21: "open mic", 424: "variety show", 10173: "auditions", 430: "improv", 446: "magic show"},
 

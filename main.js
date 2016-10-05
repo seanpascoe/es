@@ -86,12 +86,12 @@ function postEvent(title, primCategory, primSubCategory, secCategory, secSubCate
     if(err) {
       console.log(err);
     }
-    console.log(event);
+    console.log('success');
   });
 }
 
 
-fs.readFile(__dirname + '/getevents.xml', function(err, data) {
+fs.readFile(__dirname + '/getevents2.xml', function(err, data) {
   xml2js.parseString(data, {tagNameProcessors: [processors.stripPrefix], explicitArray: false}, function (err, result) {
 
     var events = result.GetEventResponse.events.jsEvent;
@@ -120,17 +120,37 @@ fs.readFile(__dirname + '/getevents.xml', function(err, data) {
               }
             }
           }
-        })
+        });
         if(!secCategory) {
-          console.log(catArr);
           secCategory = '';
           secSubCategory= '';
         }
+        //try assigning a primCat with parent category numbers
+          //add cases here if catArr's are console.log'd
+        if(!primCategory) {
+          catArr.forEach(function(eventCatNum) {
+            switch (eventCatNum) {
+              case "17":
+                primCategory = "music";
+                console.log("assigned music primCat on second go!")
+                break;
+              default:
+                break;
+            }
+          });
+        }
+        if(!primCategory) {
+          console.log(catArr)
+        }
+
       };
 
       var title = event.Name;
 
-      parseCats(event.Tags.int);
+      //checks to see if tags are not a string(single category), handle this in future
+      if(typeof event.Tags.int !== 'string') {
+        parseCats(event.Tags.int);
+      }
 
       var locationName = event.Venue;
       var address = typeof event.Address == 'string' ? event.Address : '';
@@ -158,15 +178,16 @@ fs.readFile(__dirname + '/getevents.xml', function(err, data) {
       var cwId = event.Id;
 
 
-      if(typeof event.Address == 'string') {
-          getCoords(address, city, state, function(lat, lng) {
-            postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, cwId, lat, lng);
-          });
-      } else {
-          var lat = typeof event.Address !== 'string' ? event.latitude : '';
-          var lng = typeof event.Address !== 'string' ? event.longitude : '';
-          postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, cwId, lat, lng);
-      }
+      // if(typeof event.Address == 'string') {
+      //     getCoords(address, city, state, function(lat, lng) {
+      //       postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, cwId, lat, lng);
+      //     });
+      // } else {
+      //     var lat = typeof event.Address !== 'string' ? event.latitude : '';
+      //     var lng = typeof event.Address !== 'string' ? event.longitude : '';
+      //     postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, cwId, lat, lng);
+      // }
+
     })
 
 
