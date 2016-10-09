@@ -32,7 +32,7 @@ var categories = {
 
   professional: {42: "business", 43: "real estate", 44: "technology", 45: "law", 46: "science", 47: "schools", 48: "career & jobs", 49: "networking", 180: "medicine"},
 
-  community: {34: "parks & gardens", 10120: "community groups", 68: "volunteer", 69: "fundraisers", 73: "causes & activism", 70: "politics & government", 439: "politics & government", 10005: "politics & government", 79: "family", 80: "kids", 81: "teens", 82: "singles", 83: "women", 84: "seniors", 363: "lgbt"},
+  community: {34: "parks & gardens", 10120: "community groups", 68: "volunteer", 69: "fundraisers", 73: "causes & activism", 70: "politics & government", 439: "politics & government", 10005: "politics & government", 79: "family", 80: "kids", 81: "teens", 82: "singles", 83: "women", 84: "seniors", 363: "lgbt", 10022: "patriotic"},
 
   'special events': {31: "festivals & fairs", 381: "parties & reunions", 431: "parties & reunions", 390: "holidays", 178: "tradeshows & expos", 385: "farmers markets", 388: "yard sales", 386: "flea markets", 10142: "awards ceremony"}
 };
@@ -84,7 +84,7 @@ function postEvent(title, primCategory, primSubCategory, secCategory, secSubCate
     lng: lng
   }).save((err, event) => {
     if(err) {
-      console.log(err);
+      console.log(err.message);
     }
     console.log('success');
   });
@@ -147,8 +147,8 @@ fs.readFile(__dirname + '/getevents2.xml', function(err, data) {
 
       var title = event.Name;
 
-      //checks to see if tags are not a string(single category), handle this in future
-      if(typeof event.Tags.int !== 'string') {
+      //checks to see if tags are not a string(single category) or undefined, handle this in future
+      if(typeof event.Tags.int != 'string' && typeof event.Tags.int != 'undefined') {
         parseCats(event.Tags.int);
       }
 
@@ -164,7 +164,12 @@ fs.readFile(__dirname + '/getevents2.xml', function(err, data) {
       var url = (function() {
         if(typeof event.Links.jsLink !== 'undefined') {
           return event.Links.jsLink.url
-        } else if(typeof event.Tickets.jsLink !== 'undefined') {
+        } else if(typeof event.Tickets.jsLink != 'undefined') {
+          //handles case where Tickets.jsLink is an array
+          if(event.Tickets.jsLink.length > 1) {
+            return event.Tickets.jsLink[0].url;
+          }
+          //remove affiliate code from bandsintown link
           if(event.Tickets.jsLink.url.includes('buy_tickets')) {
             return event.Tickets.jsLink.url.split('buy_tickets')[0];
           }
@@ -186,7 +191,7 @@ fs.readFile(__dirname + '/getevents2.xml', function(err, data) {
           var lat = typeof event.Address !== 'string' ? event.latitude : '';
           var lng = typeof event.Address !== 'string' ? event.longitude : '';
           postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, cwId, lat, lng);
-      // }
+      }
 
     })
 
