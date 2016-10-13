@@ -8,7 +8,7 @@ var Event = require('./event');
 var mongoUri = process.env.MONGODB_URI || 'mongodb://localhost/thehaps';
 mongoose.connect(mongoUri);
 
-//find event documents with matching lat and lng's
+// find event documents with matching lat and lng's
 function getDups() {
     Event.aggregate([
         { $group: {
@@ -54,9 +54,11 @@ function modifyCoords(id) {
     let oldLng = parseFloat(doc.lng);
 
     let plusOrMinusLat = Math.random() < 0.5 ? -1 : 1
+    console.log(plusOrMinusLat)
     let newLat = (Math.random()*.0001*plusOrMinusLat) + oldLat
 
     let plusOrMinusLng = Math.random() < 0.5 ? -1 : 1;
+    console.log(plusOrMinusLng)
     let newLng = (Math.random()*.0001*plusOrMinusLng) + oldLng
 
 
