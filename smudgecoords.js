@@ -54,11 +54,9 @@ function modifyCoords(id) {
     let oldLng = parseFloat(doc.lng);
 
     let plusOrMinusLat = Math.random() < 0.5 ? -1 : 1
-    console.log(plusOrMinusLat)
     let newLat = (Math.random()*.0001*plusOrMinusLat) + oldLat
 
     let plusOrMinusLng = Math.random() < 0.5 ? -1 : 1;
-    console.log(plusOrMinusLng)
     let newLng = (Math.random()*.0001*plusOrMinusLng) + oldLng
 
 
