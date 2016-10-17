@@ -21,9 +21,11 @@ var Event = new Schema({
   url: String,
   host: String,
   contactNumber: String,
+  contactEmail: String,
   cwId: { type: String, required: true, unique: true, trim: true },
   lat: String,
-  lng: String
+  lng: String,
+  active: Boolean
 });
 
 

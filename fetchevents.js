@@ -49,7 +49,7 @@ function getCoords(address, city, state, callback) {
       });
       res.on('end', function(){
           var data = JSON.parse(body);
-          // console.log("Got a response: ", data.results[0].geometry.location);
+          console.log("Got a response: ", data.status);
           var location = data.results[0].geometry.location;
           var lat = location.lat;
           var lng = location.lng;
@@ -60,7 +60,7 @@ function getCoords(address, city, state, callback) {
   });
 }
 
-function postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, cwId, lat, lng) {
+function postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, contactEmail, cwId, lat, lng) {
   new Event({
     title: title,
     primCategory: primCategory,
@@ -79,9 +79,11 @@ function postEvent(title, primCategory, primSubCategory, secCategory, secSubCate
     url: url,
     host: host,
     contactNumber: contactNumber,
+    contactEmail: contactEmail,
     cwId: cwId,
     lat: lat,
-    lng: lng
+    lng: lng,
+    active: true
   }).save((err, event) => {
     if(err) {
       console.log(err.message);
@@ -96,7 +98,7 @@ fs.readFile(__dirname + '/getevents2.xml', function(err, data) {
 
     var events = result.GetEventResponse.events.jsEvent;
 
-    var eventsArr = events.map(function(event){
+    events.forEach(function(event){
       var primCategory;
       var primSubCategory;
       var secCategory;
@@ -178,20 +180,34 @@ fs.readFile(__dirname + '/getevents2.xml', function(err, data) {
           return ''
         }
       })()
-      var host = typeof event.ct.name == 'string' ? event.ct.name : '';
+      var hostName = typeof event.ct.name == 'string' ? event.ct.name : '';
+      var hostOrg = typeof event.ct.org == 'string' ? event.ct.org : '';
+      var host = (function() {
+        if(hostName && hostOrg) {
+          return hostName + ", " + hostOrg;
+        } else if(hostOrg) {
+          return hostOrg;
+        } else if(hostName) {
+          return hostName;
+        } else {
+          return '';
+        }
+      })();
+
       var contactNumber = typeof event.ct.phone == 'string' ? event.ct.phone : '';
+      var contactEmail = typeof event.ct.email == 'string' ? event.ct.email : '';
       var cwId = event.Id;
 
-
-      if(typeof event.Address == 'string') {
-          getCoords(address, city, state, function(lat, lng) {
-            postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, cwId, lat, lng);
-          });
-      } else {
-          var lat = typeof event.Address !== 'string' ? event.latitude : '';
-          var lng = typeof event.Address !== 'string' ? event.longitude : '';
-          postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, cwId, lat, lng);
-      }
+      console.log(title)
+      // if(typeof event.Address == 'string') {
+      //     getCoords(address, city, state, function(lat, lng) {
+      //       postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, contactEmail, cwId, lat, lng);
+      //     });
+      // } else {
+      //     var lat = typeof event.Address !== 'string' ? event.latitude : '';
+      //     var lng = typeof event.Address !== 'string' ? event.longitude : '';
+      //     postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, contactEmail, cwId, lat, lng);
+      // }
 
     })
 
