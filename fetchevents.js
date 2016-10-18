@@ -37,6 +37,23 @@ var categories = {
   'special events': {31: "festivals & fairs", 381: "parties & reunions", 431: "parties & reunions", 390: "holidays", 178: "tradeshows & expos", 385: "farmers markets", 388: "yard sales", 386: "flea markets", 10142: "awards ceremony"}
 };
 
+var mainCats = {
+  2: "performing arts",
+  3: "visual arts",
+  4: "literary arts",
+  5: "community",
+  6: "sports & outdoors",
+  7: "education",
+  8: "professional",
+  10: "lifestyle",
+  11: "community",
+  12: "food & drink",
+  14: "special events",
+  15: "hobbies & interests",
+  76: "hobbies & interests",
+  390: "special events"
+}
+
 function getCoords(address, city, state, callback) {
   var mapAddress = address.split(' ').join('+').replace(/\./g, '');
   var mapCity = city.split(' ').join('+').replace(/\./g, '');
@@ -97,119 +114,140 @@ fs.readFile(__dirname + '/getevents2.xml', function(err, data) {
   xml2js.parseString(data, {tagNameProcessors: [processors.stripPrefix], explicitArray: false}, function (err, result) {
 
     var events = result.GetEventResponse.events.jsEvent;
+    var interval = 21; // delay in milliseconds
 
-    events.forEach(function(event){
-      var primCategory;
-      var primSubCategory;
-      var secCategory;
-      var secSubCategory;
-      function parseCats(catArr) {
-        //loop over all event category numbers and try to match with categories
-        catArr.forEach(function(eventCatNum) {
-          //loop over parent categories in list
-          for(var cat in categories) {
-            //assign name to subcategories object for each parent category
-            var subCategories = categories[cat]
-            //loop over subcategories object
-            for(var subCatNum in subCategories) {
-              //if the subcategory number (key) equals the eventcategorynumber, assign the categories
-              if(subCatNum == eventCatNum && !primCategory) {
-                primCategory = cat;
-                primSubCategory = subCategories[subCatNum];
-              } else if(subCatNum == eventCatNum && !secCategory){
-                secCategory = cat;
-                secSubCategory = subCategories[subCatNum];
+    for(let i = 0; i < events.length; i++) {
+
+      setTimeout(function(i) {
+
+        let event = events[i];
+
+        var primCategory;
+        var primSubCategory;
+        var secCategory;
+        var secSubCategory;
+        function parseCats(catArr) {
+          //loop over all event category numbers and try to match with categories
+          catArr.forEach(function(eventCatNum) {
+            //loop over parent categories in list
+            for(var cat in categories) {
+              //assign name to subcategories object for each parent category
+              var subCategories = categories[cat]
+              //loop over subcategories object
+              for(var subCatNum in subCategories) {
+                //if the subcategory number (key) equals the eventcategorynumber, assign the categories
+                if(subCatNum == eventCatNum && !primCategory) {
+                  primCategory = cat;
+                  primSubCategory = subCategories[subCatNum];
+                } else if(subCatNum == eventCatNum && !secCategory){
+                  secCategory = cat;
+                  secSubCategory = subCategories[subCatNum];
+                }
               }
             }
-          }
-        });
-        if(!secCategory) {
-          secCategory = '';
-          secSubCategory= '';
-        }
-        //try assigning a primCat with parent category numbers
-          //add cases here if catArr's are console.log'd
-        if(!primCategory) {
-          catArr.forEach(function(eventCatNum) {
-            switch (eventCatNum) {
-              case "17":
-                primCategory = "music";
-                console.log("assigned music primCat on second go!")
-                break;
-              default:
-                break;
-            }
           });
-        }
-        if(!primCategory) {
-          console.log(catArr)
-        }
-
-      };
-
-      var title = event.Name;
-
-      //checks to see if tags are not a string(single category) or undefined, handle this in future
-      if(typeof event.Tags.int != 'string' && typeof event.Tags.int != 'undefined') {
-        parseCats(event.Tags.int);
-      }
-
-      var locationName = event.Venue;
-      var address = typeof event.Address == 'string' ? event.Address : '';
-      var city = event.CityState.split(', ')[0];
-      var state = event.CityState.split(', ')[1];
-      var description = event.Description;
-      var date = moment.utc(event.Date).format('MMMM D, YYYY');
-      var startTime = moment.utc(event.DateStart).format('HH:mm');
-      var endTime = typeof event.DateEnd == 'string' ? moment.utc(event.DateEnd).format('HH:mm') : '';
-      var timeValue = parseInt(moment(`${date}, ${startTime}`, 'MMMM D, YYYY, HH:mm', true).format('x'));
-      var url = (function() {
-        if(typeof event.Links.jsLink !== 'undefined') {
-          return event.Links.jsLink.url
-        } else if(typeof event.Tickets.jsLink != 'undefined') {
-          //handles case where Tickets.jsLink is an array
-          if(event.Tickets.jsLink.length > 1) {
-            return event.Tickets.jsLink[0].url;
+          if(!secCategory) {
+            secCategory = '';
+            secSubCategory= '';
           }
-          //remove affiliate code from bandsintown link
-          if(event.Tickets.jsLink.url.includes('buy_tickets')) {
-            return event.Tickets.jsLink.url.split('buy_tickets')[0];
+          //try assigning a primCat with parent category numbers
+            //add cases here if catArr's are console.log'd
+          if(!primCategory) {
+            catArr.forEach(function(eventCatNum) {
+              switch (eventCatNum) {
+                case "17":
+                  primCategory = "music";
+                  console.log("assigned music primCat on second go!")
+                  break;
+                default:
+                  break;
+              }
+            });
           }
-          return event.Tickets.jsLink.url
-        } else {
-          return ''
+          if(!primCategory) {
+            console.log(catArr)
+          }
+
+        };
+
+        function parseCatString(catString) {
+          for(var catNum in mainCats) {
+            if(catString === catNum) {
+              primCategory = mainCats[catString];
+              console.log('assigned primCategory from string!');
+            }
+          }
         }
-      })()
-      var hostName = typeof event.ct.name == 'string' ? event.ct.name : '';
-      var hostOrg = typeof event.ct.org == 'string' ? event.ct.org : '';
-      var host = (function() {
-        if(hostName && hostOrg) {
-          return hostName + ", " + hostOrg;
-        } else if(hostOrg) {
-          return hostOrg;
-        } else if(hostName) {
-          return hostName;
-        } else {
-          return '';
+
+        var title = event.Name;
+
+        //call functions to assign categories
+        if(typeof event.Tags.int != 'string' && typeof event.Tags.int != 'undefined') {
+          parseCats(event.Tags.int);
+        } else if(typeof event.Tags.int === "string") {
+          parseCatString(event.Tags.int);
         }
-      })();
 
-      var contactNumber = typeof event.ct.phone == 'string' ? event.ct.phone : '';
-      var contactEmail = typeof event.ct.email == 'string' ? event.ct.email : '';
-      var cwId = event.Id;
 
-      console.log(title)
-      // if(typeof event.Address == 'string') {
-      //     getCoords(address, city, state, function(lat, lng) {
-      //       postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, contactEmail, cwId, lat, lng);
-      //     });
-      // } else {
-      //     var lat = typeof event.Address !== 'string' ? event.latitude : '';
-      //     var lng = typeof event.Address !== 'string' ? event.longitude : '';
-      //     postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, contactEmail, cwId, lat, lng);
-      // }
 
-    })
+        var locationName = event.Venue;
+        var address = typeof event.Address == 'string' ? event.Address : '';
+        var city = event.CityState.split(', ')[0];
+        var state = event.CityState.split(', ')[1];
+        var description = event.Description;
+        var date = moment.utc(event.Date).format('MMMM D, YYYY');
+        var startTime = moment.utc(event.DateStart).format('HH:mm');
+        var endTime = typeof event.DateEnd == 'string' ? moment.utc(event.DateEnd).format('HH:mm') : '';
+        var timeValue = parseInt(moment(`${date}, ${startTime}`, 'MMMM D, YYYY, HH:mm', true).format('x'));
+        var url = (function() {
+          if(typeof event.Links.jsLink !== 'undefined') {
+            return event.Links.jsLink.url
+          } else if(typeof event.Tickets.jsLink != 'undefined') {
+            //handles case where Tickets.jsLink is an array
+            if(event.Tickets.jsLink.length > 1) {
+              return event.Tickets.jsLink[0].url;
+            }
+            //remove affiliate code from bandsintown link
+            if(event.Tickets.jsLink.url.includes('buy_tickets')) {
+              return event.Tickets.jsLink.url.split('buy_tickets')[0];
+            }
+            return event.Tickets.jsLink.url
+          } else {
+            return ''
+          }
+        })()
+        var hostName = typeof event.ct.name == 'string' ? event.ct.name : '';
+        var hostOrg = typeof event.ct.org == 'string' ? event.ct.org : '';
+        var host = (function() {
+          if(hostName && hostOrg) {
+            return hostName + ", " + hostOrg;
+          } else if(hostOrg) {
+            return hostOrg;
+          } else if(hostName) {
+            return hostName;
+          } else {
+            return '';
+          }
+        })();
+
+        var contactNumber = typeof event.ct.phone == 'string' ? event.ct.phone : '';
+        var contactEmail = typeof event.ct.email == 'string' ? event.ct.email : '';
+        var cwId = event.Id;
+
+        console.log(primCategory);
+
+        // if(typeof event.Address == 'string') {
+        //     getCoords(address, city, state, function(lat, lng) {
+        //       postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, contactEmail, cwId, lat, lng);
+        //     });
+        // } else {
+        //     var lat = typeof event.Address !== 'string' ? event.latitude : '';
+        //     var lng = typeof event.Address !== 'string' ? event.longitude : '';
+        //     postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, contactEmail, cwId, lat, lng);
+        // }
+
+      }, interval * i, i);
+    }
 
 
 
