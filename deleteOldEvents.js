@@ -8,18 +8,21 @@ var Event = require('./event');
 var mongoUri = process.env.MONGODB_URI || 'mongodb://localhost/thehaps';
 mongoose.connect(mongoUri);
 
-let endOfYesterday = moment().subtract(1, 'days').endOf('day').format("x");
+var endOfYesterday = moment().subtract(1, 'days').endOf('day').format("x");
 
 //find old events
 function getOldEvents() {
-  Event.find({timeValue: {$lte:endOfYesterday} }).remove().exec(function(err, numDocs) {
-    if(err) {
-      console.log(err);
-    }
-    console.log(numDocs.result.n + ' events deleted');
+  return new Promise((resolve, reject) => {
+    Event.find({timeValue: {$lte:endOfYesterday} }).remove().exec(function(err, numDocs) {
+      if(err) {
+        reject(err);
+      }
+      resolve(numDocs.result.n + ' events deleted');
+    });
   });
-};
+}
 
-getOldEvents();
-
-// mongoose.disconnect()
+getOldEvents().then(result => {
+  console.log(result);
+  mongoose.disconnect()
+});
