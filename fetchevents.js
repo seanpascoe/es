@@ -72,10 +72,12 @@ function getCoords(address, city, state) {
             if (data.results[0]) {
               var location = data.results[0].geometry.location
               resolve(location);
+            } else {
+              reject("unable to retrieve coords");
             }
         });
     }).on('error', function(e){
-          console.log("Got an error: ", e);
+      console.log("Got an error: ", e);
     });
   });
 }
@@ -244,8 +246,11 @@ function processEvents(err, result) {
               var lng = location.lng;
               postEvent(title, primCategory, primSubCategory, secCategory, secSubCategory, locationName, address, city, state, description, date, startTime, endTime, timeValue, url, host, contactNumber, contactEmail, cwId, lat, lng).then((value) => {
                 resolve(value);
-              });
-            });
+              })
+            }).catch(data => {
+              console.log(data);
+              resolve(data);
+            });;
         } else {
             var lat = typeof event.Address !== 'string' ? event.latitude : '';
             var lng = typeof event.Address !== 'string' ? event.longitude : '';

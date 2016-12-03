@@ -32,8 +32,6 @@ function getDups() {
           console.log(err);
           reject(err)
         }
-        // getIds(result);
-        console.log(result)
         resolve(result)
     });
   });
@@ -56,7 +54,7 @@ function getIds(arr) {
     Promise.all(coordsArr).then(results => {
       console.log(results);
       mongoose.disconnect();
-    }).fail(err => {
+    }).catch(err => {
       console.log(err)
       mongoose.disconnect();
     })
