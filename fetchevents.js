@@ -3,6 +3,7 @@ var fs = require('fs');
 var xml2js = require('xml2js');
 var util = require('util');
 var processors = require('xml2js/lib/processors');
+var request = require('request');
 var moment = require('moment');
 var https = require('https');
 var mongoose = require('mongoose');
@@ -53,6 +54,17 @@ var mainCats = {
   76: "hobbies & interests",
   390: "special events"
 }
+
+var today = moment().format('YYYY-MM-DD');
+
+var eventsLimit = 25;
+
+var eventsSkip = 0
+
+var eventsParam = `{"searchKeywords":null,"venueKeywords":null,"search":"","longitude":-111.888221740723,"latitude":40.760311126709,"distance":50,"limit":${eventsLimit},"categories":[],"skip":${eventsSkip},"start":"${today}T00:00:00.000Z","end":null,"sortby":"start","sortdir":"asc","onlySparked":false,"oneSort":false,"deals":false,"hier":[2,5299,5300],"possible":false,"ppid":8315,"blockedCategories":[],"blockedKeywords":["x96","x96 live","x96 event","Eagle live","Eagle event","mix 1079","mix live","mix event","mix pop-up","u92","u92 live","u92 event","espn 700","espn 960","Cougar Sports Live","Bill Riley","rewind:","rewind 100.7","rewind live","rewind event","rewind night"],"hoursOffset":7,"venue":null,"exact":false,"interest":50,"eventPIds":null,"defaultCat":true,"metric":false,"handPicked":false,"bhier":[2,5299,5300],"labels":[]}`
+
+var eventsURL = `http://portal.cityspark.com/api/events/getevents2?request=${encodeURIComponent(eventsParam)}`
+
 
 function getCoords(address, city, state) {
   return new Promise(function(resolve, reject) {
@@ -281,11 +293,31 @@ function processEvents(err, result) {
   })
 }
 
+
+
+
 function getEvents() {
-  fs.readFile(__dirname + '/getevents2.xml', function(err, data) {
-    xml2js.parseString(data, {tagNameProcessors: [processors.stripPrefix], explicitArray: false}, processEvents);
+  request({uri: eventsURL, headers: {'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36', 'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'}}, function(error, response, body) {
+    if(error) {
+      console.log(error);
+    }
+
+    xml2js.parseString(body, {tagNameProcessors: [processors.stripPrefix], explicitArray: false}, processEvents);
   });
 
 }
 
 getEvents();
+
+
+
+
+
+// fetch events from local file
+// function getEvents() {
+//   fs.readFile(__dirname + '/getevents2.xml', function(err, data) {
+//     console.log(data)
+//     xml2js.parseString(data, {tagNameProcessors: [processors.stripPrefix], explicitArray: false}, processEvents);
+//   });
+//
+// }
